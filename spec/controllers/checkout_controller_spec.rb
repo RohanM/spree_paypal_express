@@ -135,12 +135,25 @@ module Spree
           paypal_gateway.stub(:payment_profiles_supported? => true)
           order.stub_chain(:payment, :payment_method, :payment_profiles_supported? => true)
           order.stub_chain(:payment, :source, :type => 'Spree:PaypalAccount')
-          details_for_response.stub(:params => details_for_response.params.merge({'first_name' => 'Dr.', 'last_name' => 'Evil'}),
-            :address => {'address1' => 'Apt. 187', 'address2'=> 'Some Str.', 'city' => 'Chevy Chase', 'country' => 'US', 'zip' => '20815', 'state' => 'MD' })
-
         end
 
         it "should update ship_address and render review" do
+          details_for_response.stub(:params => details_for_response.params.merge({'first_name' => 'Dr.', 'last_name' => 'Evil'}),
+            :address => {'address1' => 'Apt. 187', 'address2'=> 'Some Str.', 'city' => 'Chevy Chase', 'country' => 'US', 'zip' => '20815', 'state' => 'MD' })
+
+          paypal_gateway.provider.should_receive(:details_for).with(token).and_return(details_for_response)
+
+          get :paypal_confirm, {:order_id => order.number, :payment_method_id => "123", :token => token, :PayerID => "FWRVKNRRZ3WUC" }
+
+          order.ship_address.address1.should == "Apt. 187"
+          order.state.should == "confirm"
+          response.should render_template("shared/paypal_express_confirm")
+        end
+
+        it "should update ship_address and render review when state is nil" do
+          details_for_response.stub(:params => details_for_response.params.merge({'first_name' => 'Dr.', 'last_name' => 'Evil'}),
+            :address => {'address1' => 'Apt. 187', 'address2'=> 'Some Str.', 'city' => 'Chevy Chase', 'country' => 'US', 'zip' => '20815', 'state' => nil })
+
           paypal_gateway.provider.should_receive(:details_for).with(token).and_return(details_for_response)
 
           get :paypal_confirm, {:order_id => order.number, :payment_method_id => "123", :token => token, :PayerID => "FWRVKNRRZ3WUC" }
