@@ -85,6 +85,12 @@ module Spree
           else
             order_ship_address.state_name = ship_address["state"]
           end
+
+          if state.nil?
+            Bugsnag.notify(RuntimeError.new("spree_paypal_express state not found from paypal data"),
+                           {:ppx_details => @ppx_details})
+          end
+
           order_ship_address.save!
 
           @order.ship_address = order_ship_address
