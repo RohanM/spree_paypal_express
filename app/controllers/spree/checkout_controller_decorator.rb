@@ -15,6 +15,8 @@ module Spree
       end
 
       unless @ppx_response.success?
+        Bugsnag.notify(RuntimeError.new("spree_paypal_express paypal_checkout gateway error"),
+                       {:opts => opts, :ppx_response => @ppx_response})
         gateway_error(@ppx_response)
         redirect_to edit_order_url(@order)
         return
@@ -39,6 +41,8 @@ module Spree
       end
 
       unless @ppx_response.success?
+        Bugsnag.notify(RuntimeError.new("spree_paypal_express paypal_payment gateway error"),
+                       {:opts => opts, :ppx_response => @ppx_response})
         gateway_error(@ppx_response)
         redirect_to edit_order_checkout_url(@order, :state => "payment")
         return
