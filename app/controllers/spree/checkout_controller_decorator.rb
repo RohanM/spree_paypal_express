@@ -16,10 +16,13 @@ module Spree
 
       unless @ppx_response.success?
         Bugsnag.notify(RuntimeError.new("spree_paypal_express paypal_checkout gateway error"),
-                       {:opts => opts, :ppx_response => @ppx_response})
+                       {:opts => opts, :ppx_response => @ppx_response, :ppx_response_s => @ppx_response.to_s, :gateway => @gateway})
         gateway_error(@ppx_response)
         redirect_to edit_order_url(@order)
         return
+      else
+        Bugsnag.notify(RuntimeError.new("spree_paypal_express paypal_checkout gateway success"),
+                       {:opts => opts, :ppx_response => @ppx_response, :ppx_response_s => @ppx_response.to_s, :gateway => @gateway})
       end
 
       redirect_to(@gateway.redirect_url_for(response.token, :review => payment_method.preferred_review))
@@ -42,10 +45,13 @@ module Spree
 
       unless @ppx_response.success?
         Bugsnag.notify(RuntimeError.new("spree_paypal_express paypal_payment gateway error"),
-                       {:opts => opts, :ppx_response => @ppx_response})
+                       {:opts => opts, :ppx_response => @ppx_response, :ppx_response_s => @ppx_response.to_s, :gateway => @gateway})
         gateway_error(@ppx_response)
         redirect_to edit_order_checkout_url(@order, :state => "payment")
         return
+      else
+        Bugsnag.notify(RuntimeError.new("spree_paypal_express paypal_payment gateway success"),
+                       {:opts => opts, :ppx_response => @ppx_response, :ppx_response_s => @ppx_response.to_s, :gateway => @gateway})
       end
 
       redirect_to(@gateway.redirect_url_for(@ppx_response.token, :review => payment_method.preferred_review))
